@@ -1,0 +1,11 @@
+:global{
+  .self_label_range{
+    .ant-form-item-label{
+      display: flex;
+      label{
+        display: flex;
+        width: 100%;
+      }
+    }
+  }
+}

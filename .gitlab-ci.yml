@@ -1,0 +1,107 @@
+stages:
+    - dev
+    - test
+    - master
+
+# 定义变量
+variables:
+    # 测试服务上的静态资源路径
+    STATIC_PATH: /opt/soft/tengine/html/mljr/
+    # 上线时所拉取的git地址
+    # 目前上线的代码放在俩个group中
+    # web-release-group：http://gitlab.mljr.com/web-release-group/
+    # FEWeb-release-group：http://gitlab.mljr.com/FEWeb-release-group
+    # 请确认项目位于哪个group中
+    # 默认web-release-group：git@gitlab.mljr.com:FEWeb-release-group/ + 项目名称.git
+    # 如不是，请手动配置
+    # web-release-group
+    RELEASE_GIT: git@gitlab.mljr.com:web-release-group/${CI_PROJECT_NAME}.git
+    # FEWeb-release-group
+    # RELEASE_GIT: git@gitlab.mljr.com:FEWeb-release-group/${CI_PROJECT_NAME}.git
+    # 同步至104
+    SYNC_104: rsync -auvzP --delete ./dist/$CI_PROJECT_NAME $STATIC_PATH
+    # 同步至133
+    SYNC_133: rsync -auvzP --delete ./dist/$CI_PROJECT_NAME root@192.168.49.133:$STATIC_PATH
+    # 同步至147
+    SYNC_147: rsync -auvzP --delete ./dist/$CI_PROJECT_NAME root@192.168.49.147:$STATIC_PATH
+# 缓存
+cache:
+    untracked: true
+    paths:
+        - node_modules/
+        
+# 运行脚本前的操作
+before_script:
+    - whoami
+    - pwd
+    # 获取当前fetch的文件列表，并检查是否有^package 相关文件
+    - PACKAGE=$(git diff --name-only HEAD@{0} HEAD@{1} | grep '^\<package' || echo '')
+    # 如果没有node_modules目录，则无缓存，一般为当前分支首次编译，需先执行 npm install
+    # 如果存在node_modules目录，且package相关文件有更新，则需先执行 npm install
+    - test ! -d node_modules || test -n "$PACKAGE" && npm install
+
+# 手动部署
+dev:
+    stage: dev
+    script:
+        - echo 'dev'
+        - npm run build
+        # 同步至104
+        - $SYNC_104
+        # 同步至133
+        # - $SYNC_133
+        # 同步至147
+        # - $SYNC_147
+    except:
+        - test
+        - master
+    # 需要手动执行
+    when: manual
+
+
+# 自动部署
+test:
+    stage: test
+    script:
+        - echo 'test'
+        - num run build
+        # 同步至104
+        - $SYNC_104
+        # 同步至133
+        # - $SYNC_133
+        # 同步至147
+        # - $SYNC_147
+    only:
+        - test
+
+
+# 上线
+master:
+    stage: master
+    script:
+        - echo 'master'
+        # 编译
+        - npm run build
+        # 发布的目录为当前目录名+ -www 后缀
+        # 判断-www目录是否存在，如已存在，则先进行删除操作
+        - test -d ${CI_PROJECT_NAME}-www && rm -rf ${CI_PROJECT_NAME}-www
+        # 克隆
+        - git clone $RELEASE_GIT ${CI_PROJECT_NAME}-www
+        # 清空文件夹，.git信息会保留
+        - test -d ${CI_PROJECT_NAME}-www && rm -rf ${CI_PROJECT_NAME}-www/*
+        # 进行复制操作
+        - cp -R ${CI_PROJECT_NAME}/dist__www/${CI_PROJECT_NAME}/* ${CI_PROJECT_NAME}-www/
+        # 在当前目录设置git提交的用户名
+        - cd ${CI_PROJECT_NAME}-www
+        - git config user.name ${GITLAB_USER_EMAIL}
+        - git config user.email ${GITLAB_USER_EMAIL}
+        # 提交
+        - git add . && git commit -m 'Auto-commit' && git push
+        # tag
+        - git tag "www/${CI_PROJECT_NAME}/`date +\"%Y-%m-%d\"`.`date +\"%H%M\"`" && git push --tags
+    only:
+        - master
+    # 需要手动执行
+    when: manual
+    # environment:
+        # name: production

@@ -1,0 +1,34 @@
+$imgPath: '@/images';
+.login{
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: url("#{$imgPath}/banner.png") no-repeat;
+  background-size: cover;
+  position: relative;
+  .body{
+      position: absolute;
+      top: -35px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      max-width: 1200px;
+      margin: 0 auto;
+      display: -webkit-box;
+      display: -webkit-flex;
+      display: -ms-flexbox;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      h3{
+        text-align: center;
+        color: #fff;
+        font-size: 36px;
+        letter-spacing: 2px;
+        line-height: 48px;
+        text-shadow: 0 2px 1px rgba(0,0,0,.4);
+      }
+    
+  }
+}
