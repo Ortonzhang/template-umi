@@ -4,13 +4,14 @@
   "scripts": {
     "start": "umi dev",
     "build": "cross-env BUILD_ENV=production umi build",
-    "qa": "cross-env BUILD_ENV=testing umi build && scp -r ./dist/* root@192.168.14.141:/opt/soft/tengine/html/mljr",
+    "qa": "cross-env BUILD_ENV=testing umi build && scp -r ./dist/* root@192.168.49.104:/opt/soft/tengine/html/mljr",
     "www": "sh deploy.sh",
     "lint": "eslint --ext .js src mock tests",
     "precommit": "lint-staged"
   },
   "devDependencies": {
     "babel-eslint": "^9.0.0",
+    "core-js": "^2.6.1",
     "css-loader": "^2.0.0",
     "eslint": "^5.4.0",
     "eslint-config-umi": "^0.1.5",
