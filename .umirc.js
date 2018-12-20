@@ -9,7 +9,7 @@ export default {
       antd: true,
       dva: true,
       dynamicImport: true,
-      title: 'umi-app-cli',
+      title: `${config.name}`,
       dll: true,
       routes: {
         exclude: [],
@@ -77,6 +77,6 @@ export default {
     "process.env.NODE_ENV": process.env.NODE_ENV,
     "process.env.BUILD_ENV": process.env.BUILD_ENV,
     "process.env.BROWSER": process.env.BROWSER,
-    "process.env.PROJECT_NAME": process.env.PWD.split('/').pop(),
+    "process.env.PROJECT_NAME": `${config.name}`,
   }
 }
